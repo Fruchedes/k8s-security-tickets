@@ -1,0 +1,25 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: my-application-2
+  namespace: probe-demo
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: my-application-2
+  template:
+    metadata:
+      labels:
+        app: my-application-2
+    spec:
+      containers:
+      - name: my-container
+        image: nginx
+        resources:
+          requests:
+            cpu: "3"
+            memory: "3Gi"
+          limits:
+            cpu: "4"
+            memory: "4Gi"

@@ -1,0 +1,25 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: other-deployment
+  namespace: my-namespace
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: other-app
+  template:
+    metadata:
+      labels:
+        app: other-app
+    spec:
+      containers:
+      - name: other-container
+        image: nginx:latest
+        resources:
+          requests:
+            cpu: "100m"
+            memory: "128Mi"
+          limits:
+            cpu: "200m"
+            memory: "256Mi"
