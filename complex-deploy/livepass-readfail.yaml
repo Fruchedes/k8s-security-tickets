@@ -1,0 +1,41 @@
+#In this scenario the livenss pass but readiness fails due to nonexistent path trying to be reached
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: liveness-pass-readiness-fail
+  labels:
+    app: liveness-pass-readiness-fail
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: liveness-pass-readiness-fail
+  template:
+    metadata:
+      labels:
+        app: liveness-pass-readiness-fail
+    spec:
+      containers:
+      - name: nginx
+        image: nginx:latest
+        ports:
+        - containerPort: 80
+        resources:
+          requests:
+            memory: "64Mi"
+            cpu: "125m"
+          limits:
+            memory: "128Mi"
+            cpu: "250m"
+        livenessProbe:
+          httpGet:
+            path: /
+            port: 80
+          initialDelaySeconds: 5
+          periodSeconds: 10
+        readinessProbe:
+          httpGet:
+            path: /nonexistent-path
+            port: 80
+          initialDelaySeconds: 5
+          periodSeconds: 10
