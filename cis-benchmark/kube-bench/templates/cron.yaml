@@ -1,0 +1,48 @@
+---
+apiVersion: {{ template "cronjob.apiVersion" . }}
+kind: CronJob
+metadata:
+  name: {{ template "kube-bench.fullname" . }}
+  labels: {{ include "kube-bench.labels" . | nindent 4 }}
+spec:
+  schedule: {{ quote .Values.cronjob.schedule }}
+  concurrencyPolicy: "{{ .Values.concurrencyPolicy }}"
+  jobTemplate:
+    spec:
+      backoffLimit: 0
+      template:
+        {{- with .Values.podLabels }}
+        metadata:
+          labels:
+            {{- toYaml . | nindent 12 }}
+        {{- end }}
+        spec:
+          {{- if .Values.serviceAccount.create }}
+          serviceAccountName: kube-bench
+          {{- end }}
+          hostPID: true
+          restartPolicy: Never
+          containers:
+            - name: {{ .Chart.Name }}
+              image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+              imagePullPolicy: {{ .Values.image.pullPolicy }}
+              command: {{ template "cronjob.command" . }}
+              resources: {{ toYaml .Values.resources | nindent 16 }}
+              {{- with .Values.volumeMounts }}
+              volumeMounts: {{ toYaml . | nindent 16 }}
+              {{- end }}
+              {{- with .Values.securityContext }}
+              securityContext: {{ toYaml . | nindent 16 }}
+              {{- end }}
+          {{- with .Values.volumes }}
+          volumes: {{ toYaml . | nindent 12 }}
+          {{- end }}
+          {{- with .Values.nodeSelector }}
+          nodeSelector: {{ toYaml . | nindent 12 }}
+          {{- end }}
+          {{- with .Values.affinity }}
+          affinity: {{ toYaml . | nindent 12 }}
+          {{- end }}
+          {{- with .Values.tolerations }}
+          tolerations: {{ toYaml . | nindent 12 }}
+          {{- end }}
