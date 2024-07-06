@@ -1,0 +1,90 @@
+#This deployment will have both liveness and readiness probes pass causing container to run and be able to receive traffic 
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: basic-deployment
+  labels:
+    app: basic-app
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: basic-app
+  template:
+    metadata:
+      labels:
+        app: basic-app
+    spec:
+      containers:
+      - name: nginx
+        image: nginx:latest
+        ports:
+        - containerPort: 80
+        - containerPort: 8080
+        resources:
+          requests:
+            memory: "64Mi"
+            cpu: "125m"
+          limits:
+            memory: "128Mi"
+            cpu: "250m"
+        volumeMounts:
+        - name: nginx-config-volume
+          mountPath: /etc/nginx/conf.d
+        livenessProbe:
+          httpGet:
+            path: /ready
+            port: 80
+          initialDelaySeconds: 5
+          periodSeconds: 10
+        readinessProbe:
+          httpGet:
+            path: /ready
+            port: 80
+          initialDelaySeconds: 5
+          periodSeconds: 10
+      volumes:
+      - name: nginx-config-volume
+        configMap:
+          name: nginx-config
+--- 
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: nginx-config
+  namespace: probe-demo
+data:
+  default.conf: |
+    server {
+        listen 80;
+        server_name localhost;
+
+        location /ready {
+            return 200 'ok';
+            add_header Content-Type text/plain;
+        }
+
+        location / {
+            root /usr/share/nginx/html;
+            index index.html index.htm;
+        }
+    }
+
+--- 
+apiVersion: v1
+kind: Service
+metadata:
+  name: http-readiness-probe-service
+  namespace: probe-demo
+spec:
+  selector:
+    app: basic-app
+  ports:
+  - name: http
+    protocol: TCP
+    port: 80
+    targetPort: 80
+  - name: tcp
+    protocol: TCP
+    port: 8080
+    targetPort: 80

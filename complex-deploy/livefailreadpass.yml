@@ -1,0 +1,40 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: liveness-fail-readiness-pass
+  labels:
+    app: liveness-fail-readiness-pass
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: liveness-fail-readiness-pass
+  template:
+    metadata:
+      labels:
+        app: liveness-fail-readiness-pass
+    spec:
+      containers:
+      - name: nginx
+        image: nginx:latest
+        ports:
+        - containerPort: 80
+        resources:
+          requests:
+            memory: "64Mi"
+            cpu: "125m"
+          limits:
+            memory: "128Mi"
+            cpu: "250m"
+        livenessProbe:
+          httpGet:
+            path: /nonexistent-path
+            port: 80
+          initialDelaySeconds: 5
+          periodSeconds: 10
+        readinessProbe:
+          httpGet:
+            path: /
+            port: 80
+          initialDelaySeconds: 5
+          periodSeconds: 10
