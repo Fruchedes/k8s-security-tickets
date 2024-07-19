@@ -1,0 +1,37 @@
+apiVersion: pcc.paloaltonetworks.com/v1alpha1
+kind: ConsoleDefender
+metadata:
+  name: pcc-consoledefender
+  namespace: twistlock
+spec:
+  consoleConfig:
+    serviceType: ClusterIP
+  defenderConfig:
+    docker: false
+  namespace: twistlock
+  version: 21_08_520
+---
+apiVersion: pcc.paloaltonetworks.com/v1alpha1
+kind: Console
+metadata:
+  name: pcc-console
+  namespace: twistlock
+spec:
+  consoleConfig:
+    serviceType: ClusterIP
+  namespace: twistlock
+  version: 21_08_520
+---
+apiVersion: pcc.paloaltonetworks.com/v1alpha1
+kind: Defender
+metadata:
+  name: pcc-defender
+  namespace: twistlock
+spec:
+  defenderConfig:
+    clusterAddress: twistlock-console.example.com
+    consoleAddress: https://twistlock-console.example.com:8083
+    docker: false
+  namespace: twistlock
+  version: 21_08_520
+

@@ -1,0 +1,31 @@
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: kube-bench-scan
+spec:
+  schedule: "0 0 * * *"  # Runs daily at midnight
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          containers:
+          - name: kube-bench
+            image: aquasec/kube-bench:latest
+            command: ["kube-bench"]
+            args: ["--json", "--output", "/mnt/kube-bench-results/scan-report.json", "--all-namespaces"]
+          restartPolicy: OnFailure
+          volumes:
+          - name: kube-bench-results
+            persistentVolumeClaim:
+              claimName: kube-bench-results-pvc
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: kube-bench-results-pvc
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 1Gi
