@@ -1,0 +1,57 @@
+---
+nameOverride: ""
+fullnameOverride: ""
+
+provider: eks
+
+cronjob:
+  schedule: "0 0 1 * *"
+  command: []
+
+image:
+  repository: aquasec/kube-bench
+  tag: v0.7.1
+  pullPolicy: IfNotPresent
+
+serviceAccount:
+  # Specifies whether a service account should be created
+  create: false
+  # Annotations to add to the service account
+  annotations: {}
+
+securityContext: {}
+  # capabilities:
+  #   drop:
+  #   - ALL
+  # readOnlyRootFilesystem: true
+  # runAsNonRoot: true
+# runAsUser: 1000
+
+extraLabels: {}
+podLabels: {}
+resources: {}
+nodeSelector: {}
+tolerations: []
+affinity: {}
+concurrencyPolicy: Forbid
+
+volumes:
+  - name: var-lib-kubelet
+    hostPath:
+      path: "/var/lib/kubelet"
+  - name: etc-systemd
+    hostPath:
+      path: "/etc/systemd"
+  - name: etc-kubernetes
+    hostPath:
+      path: "/etc/kubernetes"
+volumeMounts:
+  - name: var-lib-kubelet
+    mountPath: /var/lib/kubelet
+    readOnly: true
+  - name: etc-systemd
+    mountPath: /etc/systemd
+    readOnly: true
+  - name: etc-kubernetes
+    mountPath: /etc/kubernetes
+    readOnly: true

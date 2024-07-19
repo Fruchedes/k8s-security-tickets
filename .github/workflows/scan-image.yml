@@ -1,0 +1,47 @@
+name: Generate and Upload Combined Scan Report
+
+on:
+  schedule:
+    - cron: '0 3 * * *'  # Runs daily at 3 AM
+  workflow_dispatch:
+
+jobs:
+  get-scan-reports:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v2
+
+    - name: Set up kubectl
+      uses: azure/setup-kubectl@v1
+      with:
+        version: 'latest'
+
+    - name: Configure kubectl
+      run: kubectl config set-context --current --namespace=default
+
+    - name: Get kube-bench report
+      run: |
+        kube_bench_pods=$(kubectl get pods -n <namespace> -l job-name=kube-bench-scan --no-headers -o custom-columns=":metadata.name")
+        for pod in $kube_bench_pods; do
+          kubectl cp <namespace>/$pod:/mnt/kube-bench-results/scan-report.json ./kube-bench-report-$pod.json
+        done
+
+    - name: Get kube-hunter report
+      run: |
+        kube_hunter_pods=$(kubectl get pods -n <namespace> -l job-name=kube-hunter-scan --no-headers -o custom-columns=":metadata.name")
+        for pod in $kube_hunter_pods; do
+          kubectl cp <namespace>/$pod:/mnt/kube-hunter-results/scan-report.json ./kube-hunter-report-$pod.json
+        done
+
+    - name: Combine reports
+      run: ./scripts/combine-reports.sh ./kube-bench-report-*.json ./kube-hunter-report-*.json ./combined-report.md
+
+    - name: Upload to S3
+      env:
+        AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        AWS_DEFAULT_REGION: 'us-east-1'
+      run: |
+        aws s3 cp ./combined-report.md s3://your-s3-bucket/combined-report-$(date +'%Y-%m-%d').md
