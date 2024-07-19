@@ -1,47 +1,56 @@
-name: Generate and Upload Combined Scan Report
+name: Trivy Scan and Report
 
 on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'deployments/**'
   schedule:
-    - cron: '0 3 * * *'  # Runs daily at 3 AM
+    - cron: '0 0 * * *'  # Run daily at midnight
   workflow_dispatch:
 
 jobs:
-  get-scan-reports:
+  trivy-scan:
     runs-on: ubuntu-latest
-
     steps:
-    - name: Checkout repository
-      uses: actions/checkout@v2
+      - name: Checkout repository
+        uses: actions/checkout@v2
 
-    - name: Set up kubectl
-      uses: azure/setup-kubectl@v1
-      with:
-        version: 'latest'
+      - name: Setup Kubernetes
+        uses: azure/setup-kubectl@v3
+        with:
+          version: 'latest'
+          
+      - name: Setup Helm
+        uses: azure/setup-helm@v1
+        with:
+          version: 'latest'
 
-    - name: Configure kubectl
-      run: kubectl config set-context --current --namespace=default
+      - name: Configure kubectl
+        run: |
+          echo "$KUBECONFIG" > $HOME/.kube/config
 
-    - name: Get kube-bench report
-      run: |
-        kube_bench_pods=$(kubectl get pods -n <namespace> -l job-name=kube-bench-scan --no-headers -o custom-columns=":metadata.name")
-        for pod in $kube_bench_pods; do
-          kubectl cp <namespace>/$pod:/mnt/kube-bench-results/scan-report.json ./kube-bench-report-$pod.json
-        done
+      - name: Run Trivy Scans
+        run: |
+          kubectl apply -f https://raw.githubusercontent.com/aquasecurity/trivy-operator/main/deploy/crd/v1alpha1/vulnerabilityreports.crd.yaml
+          kubectl apply -f https://raw.githubusercontent.com/aquasecurity/trivy-operator/main/deploy/crd/v1alpha1/configauditreports.crd.yaml
+          kubectl apply -f https://raw.githubusercontent.com/aquasecurity/trivy-operator/main/deploy/crd/v1alpha1/rbacassessmentreports.crd.yaml
+          kubectl apply -f https://raw.githubusercontent.com/aquasecurity/trivy-operator/main/deploy/crd/v1alpha1/ciskubebenchreports.crd.yaml
 
-    - name: Get kube-hunter report
-      run: |
-        kube_hunter_pods=$(kubectl get pods -n <namespace> -l job-name=kube-hunter-scan --no-headers -o custom-columns=":metadata.name")
-        for pod in $kube_hunter_pods; do
-          kubectl cp <namespace>/$pod:/mnt/kube-hunter-results/scan-report.json ./kube-hunter-report-$pod.json
-        done
+      - name: Fetch Scan Reports
+        run: |
+          kubectl get vulnerabilityreports -o json > vulnerabilityreports.json
+          kubectl get configauditreports -o json > configauditreports.json
+          kubectl get rbacassessmentreports -o json > rbacassessmentreports.json
+          kubectl get ciskubebenchreports -o json > ciskubebenchreports.json
 
-    - name: Combine reports
-      run: ./scripts/combine-reports.sh ./kube-bench-report-*.json ./kube-hunter-report-*.json ./combined-report.md
-
-    - name: Upload to S3
-      env:
-        AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-        AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-        AWS_DEFAULT_REGION: 'us-east-1'
-      run: |
-        aws s3 cp ./combined-report.md s3://your-s3-bucket/combined-report-$(date +'%Y-%m-%d').md
+      - name: Upload Reports
+        uses: actions/upload-artifact@v2
+        with:
+          name: trivy-scan-reports
+          path: |
+            vulnerabilityreports.json
+            configauditreports.json
+            rbacassessmentreports.json
+            ciskubebenchreports.json
