@@ -1,4 +1,4 @@
-user_name = ["kelson", "paddy", "Mccoy", "Teebaba", "harold", "prince", "peter", "solomom", "Edwin"] # Add more usernames as needed
+user_names = ["kelson", "paddy", "Mccoy", "Teebaba", "harold", "prince", "peter", "solomom", "Edwin"] # Add more usernames as needed
 
 # resource "aws_iam_user" "example" {
 
