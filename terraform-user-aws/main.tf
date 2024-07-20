@@ -72,4 +72,10 @@ resource "aws_iam_role_policy_attachment" "eks_service_policy" {
   policy_arn = "arn:aws:iam::aws:policy/AmazonEKSServicePolicy"
   role       = aws_iam_role.eks_cluster_role.name
 }
+
+resource "aws_iam_role_policy_attachment" "eks_vpcresourcecontroller" {
+  for_each    = aws_iam_user.example
+  policy_arn = "arn:aws:iam::aws:policy/AmazonEKSVPCResourceController"
+  role       = aws_iam_role.eks_cluster_role.name
+}
 # arn:aws:iam::905418274520:user/prince split("-", "iam-ChangePassword-for-prince")[3]
