@@ -1,0 +1,9 @@
+dependencies:
+- name: falcosidekick
+  repository: https://falcosecurity.github.io/charts
+  version: 0.8.0
+- name: k8s-metacollector
+  repository: https://falcosecurity.github.io/charts
+  version: 0.1.8
+digest: sha256:70e8d65a57b49927b519e2405e4d482cf5a506556a6c686d9ca5ab8903b5be08
+generated: "2024-07-03T10:11:02.994147521Z"

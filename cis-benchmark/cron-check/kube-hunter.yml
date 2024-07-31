@@ -1,0 +1,31 @@
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: kube-hunter-scan
+spec:
+  schedule: "0 1 * * *"  # Runs daily at 1 AM
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          containers:
+          - name: kube-hunter
+            image: aquasec/kube-hunter:latest
+            command: ["kube-hunter"]
+            args: ["--report", "json", "--log", "/mnt/kube-hunter-results/scan-report.json", "--all-namespaces"]
+          restartPolicy: OnFailure
+          volumes:
+          - name: kube-hunter-results
+            persistentVolumeClaim:
+              claimName: kube-hunter-results-pvc
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: kube-hunter-results-pvc
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 1Gi

@@ -1,0 +1,68 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: http-readiness-probe
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: http-readiness-probe
+  template:
+    metadata:
+      labels:
+        app: http-readiness-probe
+    spec:
+      securityContext:
+        seccompProfile:
+          type: RuntimeDefault
+      containers:
+      - name: nginx
+        image: nginx:latest
+        ports:
+        - containerPort: 80
+        readinessProbe:
+          httpGet:
+            path: /ready
+            port: 80
+          initialDelaySeconds: 30
+          periodSeconds: 10
+        volumeMounts:
+        - name: config-volume
+          mountPath: /etc/nginx/conf.d
+      volumes:
+      - name: config-volume
+        configMap:
+          name: nginx-config
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: nginx-config
+data:
+  default.conf: |
+    server {
+        listen 80;
+        server_name localhost;
+
+        location /ready {
+            return 200 'ok';
+            add_header Content-Type text/plain;
+        }
+
+        location / {
+            root /usr/share/nginx/html;
+            index index.html index.htm;
+        }
+    }
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: http-readiness-probe-service
+spec:
+  selector:
+    app: http-readiness-probe
+  ports:
+  - protocol: TCP
+    port: 80
+    targetPort: 80
