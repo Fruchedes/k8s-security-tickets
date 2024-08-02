@@ -20,5 +20,5 @@ Replace my-backup with the name of your backup.
 Check Restore Status:
 
 
-velero get restores
+velero get restores  
 Verify the status of your restore operation.
