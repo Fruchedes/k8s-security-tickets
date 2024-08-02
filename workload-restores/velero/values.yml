@@ -1,0 +1,11 @@
+configuration:
+  provider: aws
+  backupStorageLocation:
+    name: default
+    bucket: my-bucket
+    config:
+      region: us-west-2
+  volumeSnapshotLocation:
+    name: default
+    config:
+      region: us-west-2
