@@ -21,10 +21,6 @@ Kubernetes Network Policies are used to control the communication between pods i
 Below is a sample Terraform configuration to create a namespace, two pods, and a network policy to restrict communication between the pods based on their labels.
 
 ```hcl
-provider "kubernetes" {
-  # Configure the Kubernetes provider
-  config_context = "your-kube-context"  # Update this to your kube context
-}
 
 # Create a Kubernetes namespace
 resource "kubernetes_namespace" "example" {
