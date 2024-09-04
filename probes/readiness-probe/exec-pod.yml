@@ -1,0 +1,46 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: exec-readiness-probe
+  namespace: probe-demo
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: exec-readiness-probe
+  template:
+    metadata:
+      labels:
+        app: exec-readiness-probe
+    spec:
+      containers:
+      - name: nginx
+        image: nginx:latest
+        ports:
+        - containerPort: 80
+        readinessProbe:
+          exec:
+            command:
+            - cat
+            - /tmp/ready
+          initialDelaySeconds: 5
+          periodSeconds: 10
+        volumeMounts:
+        - name: tmp
+          mountPath: /tmp
+      volumes:
+      - name: tmp
+        emptyDir: {}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: exec-readiness-probe-service
+  namespace: probe-demo
+spec:
+  selector:
+    app: exec-readiness-probe
+  ports:
+  - protocol: TCP
+    port: 80
+    targetPort: 80

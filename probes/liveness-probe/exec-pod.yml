@@ -1,0 +1,40 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: exec-liveness-probe
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: exec-liveness-probe
+  template:
+    metadata:
+      labels:
+        app: exec-liveness-probe
+    spec:
+      containers:
+      - name: busybox
+        image: busybox
+        args:
+        - /bin/sh
+        - -c
+        - touch /tmp/healthy; sleep 60; rm -rf /tmp/healthy; sleep 600
+        livenessProbe:
+          exec:
+            command:
+            - cat
+            - /tmp/healthy
+          initialDelaySeconds: 30
+          periodSeconds: 10
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: exec-liveness-probe-service
+spec:
+  selector:
+    app: exec-liveness-probe
+  ports:
+  - protocol: TCP
+    port: 80
+    targetPort: 80
