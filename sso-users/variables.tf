@@ -23,6 +23,7 @@ variable "aws_region" {
 
 variable "users" {
   type = map(object({
+    user_name   = string
     given_name  = string 
     family_name = string
     email       = string
@@ -30,33 +31,37 @@ variable "users" {
   }))
   default = {
     "Harold_Morrel" = {
-      given_name = "Harold"
-      family_name = "Morrel"
-      email = "harold.morrel@techsecoms.com"
+      user_name = ""
+      given_name = ""
+      family_name = ""
+      email = ""
       groups = [
         "Techsecom_Engineers"
       ]
     }
     "Paddy_nfortabi" = {
-      given_name = "Paddy"
-      family_name = "nfortabi"
-      email = "paddy.nfortabi@techsecoms.com"
+      user_name = ""
+      given_name = ""
+      family_name = ""
+      email = ""
       groups = [
         "Techsecom_Engineers"
       ]
     }
     "Taiwo_Oladeri" = {
-      given_name = "Taiwo"
-      family_name = "Oladeri"
-      email = "taiwo.oladeru@techsecoms.com"
+      user_name = ""
+      given_name = ""
+      family_name = ""
+      email = ""
       groups = [
         "Techsecom_Engineers"
       ]
     }
     "Kelson_Kanu" = {
-      given_name = "Kelson"
-      family_name = "Kanu"
-      email = "kelson.kanu@techsecoms.com"
+      user_name = ""
+      given_name = ""
+      family_name = ""
+      email = ""
       groups = [
         "Techsecom_Engineers"
       ]
@@ -76,9 +81,9 @@ variable "groups" {
 
   default = {
     "Techsecom_Engineers" = {
-      group_name = "Techsecom_Engineers"
-      permission_set_name = "eks_access_perm"  # Replace with actual permission set name
-      description = "eks_access_perm"
+      group_name = ""
+      permission_set_name = ""  # Replace with actual permission set name
+      description = ""
       permission_set_session_duration = "PT12H"  # Adjust as needed
       #inline_policy = data.aws_iam_policy_document.eks_policy.json
       # Optional: managed_policy_arns = ["arn:aws:iam::123456789012:policy/ReadOnlyAccess"]
@@ -94,7 +99,7 @@ variable "accounts" {
   }))
   default = {
     "905418274520" = {
-      account_number = "905418274520"
+      account_number = ""
       groups = ["Techsecom_Engineers"]
       is_management = false
     }
